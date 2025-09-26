@@ -17,6 +17,10 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 3. Configura un emulador o dispositivo físico con Android 8.0+.
 4. Sincroniza dependencias (Gradle Sync).
 5. Ejecuta el proyecto (Run).
+6. Cuando inicies el emulador debes configurar dentro del sistema la huella biometrica y para simular la huella tienes que abrir unos controles como se muestra en los siguientes pasos:
+<img width="624" height="176" alt="image" src="https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d" />
+<img width="847" height="686" alt="image" src="https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e" />
+
 
 ## Arquitectura y decisiones técnicas
 - **MVVM (Model-View-ViewModel)**: Separación clara entre UI, lógica y datos.
