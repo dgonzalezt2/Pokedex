@@ -14,10 +14,10 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
    git clone https://github.com/dgonzalezt2/pokedex.git
    ```
 2. Abre el proyecto en Android Studio.
-3. Configura un emulador o dispositivo físico con Android 8.0+.
+3. Configura un emulador o dispositivo físico con Android 15.0+.
 4. Sincroniza dependencias (Gradle Sync).
 5. Ejecuta el proyecto (Run).
-6. Para probar la autenticación biométrica en el emulador:
+6. Para probar la autenticación biométrica en el emulador API 35 sugerida:
    - Abre la app de "Configuración" del emulador y agrega una huella digital (puedes buscar "Security" o "Biometrics").
    - Para simular la huella, abre el panel de controles del emulador:
      - Ve a **Extended Controls** (Ctrl+Shift+M o desde el menú del emulador).
