@@ -3,7 +3,7 @@ package com.example.pokedex.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pokedex.data.local.AppDatabase
-import com.example.pokedex.data.local.dao.CartItemDao
+import com.example.pokedex.data.local.dao.CartDao
 import com.example.pokedex.data.remote.PokeApiService
 import dagger.Module
 import dagger.Provides
@@ -41,5 +41,5 @@ object AppModule {
         ).build()
 
     @Provides
-    fun provideCartItemDao(db: AppDatabase): CartItemDao = db.cartItemDao()
+    fun provideCartDao(db: AppDatabase): CartDao = db.cartDao()
 }

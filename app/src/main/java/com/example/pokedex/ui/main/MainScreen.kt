@@ -1,89 +1,409 @@
 package com.example.pokedex.ui.main
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import com.example.pokedex.PokemonCatalogViewModel
+import com.example.pokedex.R
+import com.example.pokedex.data.remote.model.PokemonResult
+import com.example.pokedex.ui.cart.CartScreen
+import com.example.pokedex.ui.cart.CartViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.fragment.app.FragmentActivity
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 
+fun showCartNotification(context: Context, title: String, message: String, iconRes: Int, notificationId: Int = 1) {
+    val channelId = "cart_channel"
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(
+            channelId,
+            "Carrito",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+    val hasPermission = if (Build.VERSION.SDK_INT >= 33) {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else {
+        true
+    }
+    if (hasPermission) {
+        try {
+            NotificationManagerCompat.from(context).notify(notificationId, NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(iconRes)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build())
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+            // Aquí podrías mostrar un mensaje al usuario si lo deseas
+        }
+    } else {
+        // Aquí podrías mostrar un mensaje al usuario indicando que no tiene permiso para notificaciones
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
-    val pokemonList by viewModel.pokemonList.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage!!,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.align(Alignment.Center)
+fun PokemonDetailScreen(
+    pokemon: PokemonResult,
+    price: Double,
+    onAddToCart: () -> Unit,
+    onBack: () -> Unit,
+    onCartClick: () -> Unit,
+    cartCount: Int,
+    cartMessage: String?,
+    clearCartMessage: () -> Unit,
+    snackbarHostState: SnackbarHostState
+) {
+    val context = LocalContext.current
+    var notificationPermissionGranted by remember { mutableStateOf(false) }
+    RequestNotificationPermission { granted ->
+        notificationPermissionGranted = granted
+    }
+    val id = pokemon.url.trimEnd('/').split("/").lastOrNull() ?: "1"
+    val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(pokemon.name.replaceFirstChar { it.uppercase() }) },
+                actions = {
+                    Box {
+                        IconButton(onClick = onCartClick) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_cart),
+                                contentDescription = "Ver carrito"
+                            )
+                        }
+                        if (cartCount > 0) {
+                            Badge(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-4).dp, y = 4.dp)
+                            ) {
+                                Text(cartCount.toString())
+                            }
+                        }
+                    }
+                }
             )
-        } else if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                items(pokemonList) { pokemon ->
-                    PokemonItem(
-                        name = pokemon.name,
-                        imageUrl = getImageUrl(pokemon.url),
-                        onAddToCart = { viewModel.addToCart(pokemon.name, getImageUrl(pokemon.url)) }
-                    )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = imageUrl,
+                        placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                        error = painterResource(id = R.drawable.ic_launcher_foreground)
+                    ),
+                    contentDescription = pokemon.name,
+                    modifier = Modifier.size(128.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Precio: $${"%.2f".format(price)}", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = {
+                        onAddToCart()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text("Agregar al carrito")
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text("Volver")
                 }
             }
         }
-        Button(
-            onClick = { viewModel.loadPokemon() },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text("Cargar más")
+    }
+    LaunchedEffect(cartMessage) {
+        if (cartMessage != null) {
+            snackbarHostState.showSnackbar(cartMessage)
+            clearCartMessage()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen(
+    viewModel: PokemonCatalogViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
+) {
+    var showCart by remember { mutableStateOf(false) }
+    var showBiometricDialog by remember { mutableStateOf(false) }
+    var showBiometricScreen by remember { mutableStateOf(false) }
+    val pokemonList by viewModel.pokemonList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val cartCount by cartViewModel.cartCount.collectAsState()
+    val cartMessage by cartViewModel.cartMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    var showSnackbar by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    var selectedPokemon by remember { mutableStateOf<PokemonResult?>(null) }
+
+    @Composable
+    fun BiometricScreen(onSuccess: () -> Unit, onCancel: () -> Unit) {
+        var showPrompt by remember { mutableStateOf(true) }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+        val context = LocalContext.current
+        LaunchedEffect(showPrompt) {
+            if (showPrompt) {
+                val activity = context as? FragmentActivity
+                if (activity == null) {
+                    errorMessage = "No se puede mostrar la autenticación biométrica en este dispositivo/emulador."
+                    showPrompt = false
+                    return@LaunchedEffect
+                }
+                val executor = ContextCompat.getMainExecutor(activity)
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle("Autenticación biométrica")
+                    .setSubtitle("Coloca tu huella para continuar")
+                    .setNegativeButtonText("Cancelar")
+                    .build()
+                val biometricPrompt = BiometricPrompt(activity, executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            onSuccess()
+                        }
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                            errorMessage = errString.toString()
+                            onCancel()
+                        }
+                        override fun onAuthenticationFailed() {
+                            errorMessage = "La autenticación falló. Intenta nuevamente."
+                        }
+                    })
+                biometricPrompt.authenticate(promptInfo)
+                showPrompt = false
+            }
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Coloca tu huella para acceder al carrito", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(24.dp))
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = onCancel) {
+                    Text("Cancelar")
+                }
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+    }
+
+    if (selectedPokemon != null) {
+        val price = cartViewModel.simulatePrice(selectedPokemon!!.name)
+        PokemonDetailScreen(
+            pokemon = selectedPokemon!!,
+            price = price,
+            onAddToCart = {
+                val id = selectedPokemon!!.url.trimEnd('/').split("/").lastOrNull() ?: "1"
+                val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+                cartViewModel.addToCart(selectedPokemon!!.name, imageUrl)
+            },
+            onBack = { selectedPokemon = null },
+            onCartClick = { showCart = true },
+            cartCount = cartCount,
+            cartMessage = cartMessage,
+            clearCartMessage = { cartViewModel.clearCartMessage() },
+            snackbarHostState = snackbarHostState
+        )
+    } else if (showBiometricScreen) {
+        BiometricScreen(
+            onSuccess = { showBiometricScreen = false; showCart = true },
+            onCancel = { showBiometricScreen = false }
+        )
+    } else if (showCart) {
+        CartScreen(viewModel = cartViewModel, onBack = { showCart = false })
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                TopAppBar(
+                    title = { Text("Catálogo Pokémon") },
+                    actions = {
+                        Box {
+                            IconButton(onClick = {
+                                showBiometricDialog = true
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_cart),
+                                    contentDescription = "Carrito"
+                                )
+                            }
+                            if (cartCount > 0) {
+                                Badge(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = (-4).dp, y = 4.dp)
+                                ) {
+                                    Text(cartCount.toString())
+                                }
+                            }
+                        }
+                    }
+                )
+                if (showBiometricDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showBiometricDialog = false },
+                        title = { Text("Acceso protegido") },
+                        text = { Text("Para ver el carrito, debes autenticarte con tu huella.") },
+                        confirmButton = {
+                            Button(onClick = {
+                                showBiometricDialog = false
+                                showBiometricScreen = true
+                            }) {
+                                Text("Autenticar")
+                            }
+                        },
+                        dismissButton = {
+                            Button(onClick = { showBiometricDialog = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+                SnackbarHost(hostState = snackbarHostState)
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                } else if (isLoading && pokemonList.isEmpty()) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                        items(pokemonList) { pokemon ->
+                            val id = pokemon.url.trimEnd('/').split("/").lastOrNull() ?: "1"
+                            val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+                            val price = cartViewModel.simulatePrice(pokemon.name)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                                    .clickable { selectedPokemon = pokemon },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = imageUrl),
+                                    contentDescription = pokemon.name,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column(
+                                    modifier = Modifier.width(120.dp),
+                                    horizontalAlignment = Alignment.Start
+                                ) {
+                                    Text(
+                                        text = pokemon.name.replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = "$${"%.2f".format(price)}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Spacer(modifier = Modifier.weight(1f))
+                                Button(
+                                    onClick = {
+                                        cartViewModel.addToCart(pokemon.name, imageUrl)
+                                    },
+                                    modifier = Modifier
+                                        .width(140.dp)
+                                        .height(40.dp)
+                                ) {
+                                    Text("Agregar al carrito")
+                                }
+                            }
+                        }
+                        item {
+                            if (!isLoading) {
+                                Button(
+                                    onClick = { viewModel.loadPokemon() },
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                                ) {
+                                    Text("Cargar más")
+                                }
+                            } else {
+                                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (showSnackbar) {
+        LaunchedEffect(snackbarMessage) {
+            snackbarHostState.showSnackbar(snackbarMessage)
+            showSnackbar = false
+        }
+    }
+    if (cartMessage != null) {
+        LaunchedEffect(cartMessage) {
+            snackbarHostState.showSnackbar(cartMessage!!)
+            cartViewModel.clearCartMessage()
         }
     }
 }
 
 @Composable
-fun PokemonItem(name: String, imageUrl: String, onAddToCart: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = name,
-                modifier = Modifier.size(64.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = name.replaceFirstChar { it.uppercase() },
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Button(onClick = onAddToCart) {
-                Text("Agregar al carrito")
+fun RequestNotificationPermission(onPermissionResult: (Boolean) -> Unit) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        onPermissionResult(isGranted)
+    }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                onPermissionResult(true)
             }
+        } else {
+            onPermissionResult(true)
         }
     }
-}
-
-fun getImageUrl(apiUrl: String): String {
-    val id = apiUrl.trimEnd('/').split("/").last()
-    return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"
 }
