@@ -354,7 +354,16 @@ fun MainScreen(
                                         .width(140.dp)
                                         .height(40.dp)
                                 ) {
-                                    Text("Agregar al carrito")
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_cart),
+                                        contentDescription = "Agregar al carrito",
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        "Agregar",
+                                        fontSize = MaterialTheme.typography.bodySmall.fontSize
+                                    )
                                 }
                             }
                         }
