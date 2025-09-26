@@ -66,6 +66,8 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
   <img src="https://github.com/user-attachments/assets/73d312a8-2d1d-4521-96d0-ea3374068dcc" width="250" />
 </p>
 
+## Instalador APK
+
 ---
 
 Desarrollado por David Gonzalez Tamayo.
