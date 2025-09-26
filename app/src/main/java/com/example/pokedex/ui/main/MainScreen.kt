@@ -119,7 +119,13 @@ fun PokemonDetailScreen(
     val context = LocalContext.current
     val activity = context as? FragmentActivity
     if (showCart) {
-        CartScreen(viewModel = cartViewModel, onBack = { showCart = false })
+        CartScreen(
+            viewModel = cartViewModel,
+            onBack = { showCart = false },
+            snackbarHostState = snackbarHostState,
+            cartMessage = cartMessage,
+            clearCartMessage = { cartViewModel.clearCartMessage() }
+        )
     } else {
         Scaffold(
             topBar = {
@@ -172,17 +178,9 @@ fun PokemonDetailScreen(
                     Button(
                         onClick = {
                             onAddToCart()
-                            if (notificationPermissionGranted) {
-                                showCartNotification(
-                                    context,
-                                    "Pokémon agregado",
-                                    "${pokemon.name.replaceFirstChar { it.uppercase() }} se agregó al carrito.",
-                                    R.drawable.ic_cart
-                                )
-                            }
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .width(180.dp)
                             .height(48.dp)
                     ) {
                         Text("Agregar al carrito")
@@ -191,13 +189,23 @@ fun PokemonDetailScreen(
                     Button(
                         onClick = onBack,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .width(180.dp)
                             .height(48.dp)
                     ) {
                         Text("Volver")
                     }
                 }
             }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.fillMaxWidth(0.7f)
+            )
         }
         LaunchedEffect(cartMessage) {
             if (cartMessage != null) {
@@ -255,7 +263,13 @@ fun MainScreen(
             }
         )
     } else if (showCart) {
-        CartScreen(viewModel = cartViewModel, onBack = { showCart = false })
+        CartScreen(
+            viewModel = cartViewModel,
+            onBack = { showCart = false },
+            snackbarHostState = snackbarHostState,
+            cartMessage = cartMessage,
+            clearCartMessage = { cartViewModel.clearCartMessage() }
+        )
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {

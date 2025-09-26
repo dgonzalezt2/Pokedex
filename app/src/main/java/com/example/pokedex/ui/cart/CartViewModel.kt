@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokedex.data.local.dao.CartDao
 import com.example.pokedex.data.local.entity.CartItemEntity
-import com.example.pokedex.ui.util.showCartNotification
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,14 +38,8 @@ class CartViewModel @Inject constructor(
     fun removeItem(name: String) {
         viewModelScope.launch {
             cartDao.deleteCartItem(name)
-            // Notificación usando la función centralizada
-            showCartNotification(
-                app,
-                "Pokémon eliminado",
-                "Se eliminó $name del carrito",
-                android.R.drawable.ic_delete,
-                name.hashCode()
-            )
+            // Mostrar mensaje solo en snackbar
+            _cartMessage.value = "Se eliminó $name del carrito"
         }
     }
 

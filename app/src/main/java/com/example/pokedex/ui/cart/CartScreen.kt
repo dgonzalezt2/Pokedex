@@ -10,6 +10,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,33 +21,58 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import com.example.pokedex.R
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 
 @Composable
-fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
+fun CartScreen(
+    viewModel: CartViewModel,
+    onBack: () -> Unit,
+    snackbarHostState: SnackbarHostState,
+    cartMessage: String?,
+    clearCartMessage: () -> Unit
+) {
     val cartItems by viewModel.cartItems.collectAsState()
     val totalPrice by viewModel.totalPrice.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(painter = painterResource(id = R.drawable.ic_arrow_back), contentDescription = "Volver")
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) {
+                    Icon(painter = painterResource(id = R.drawable.ic_arrow_back), contentDescription = "Volver")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Carrito de compras", style = MaterialTheme.typography.headlineMedium)
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Carrito de compras", style = MaterialTheme.typography.headlineMedium)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(cartItems) { cartItemWithPrice ->
-                CartItemRow(
-                    name = cartItemWithPrice.item.name,
-                    imageUrl = cartItemWithPrice.item.imageUrl,
-                    price = cartItemWithPrice.price,
-                    onRemove = { viewModel.removeItem(cartItemWithPrice.item.name) }
-                )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(cartItems) { cartItemWithPrice ->
+                    CartItemRow(
+                        name = cartItemWithPrice.item.name,
+                        imageUrl = cartItemWithPrice.item.imageUrl,
+                        price = cartItemWithPrice.price,
+                        onRemove = { viewModel.removeItem(cartItemWithPrice.item.name) }
+                    )
+                }
             }
+            Text("Total: $${"%.2f".format(totalPrice)}", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(12.dp))
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Total: $${"%.2f".format(totalPrice)}", style = MaterialTheme.typography.titleLarge)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.fillMaxWidth(0.7f)
+            )
+        }
+    }
+    LaunchedEffect(cartMessage) {
+        if (cartMessage != null) {
+            snackbarHostState.showSnackbar(cartMessage)
+            clearCartMessage()
+        }
     }
 }
 
