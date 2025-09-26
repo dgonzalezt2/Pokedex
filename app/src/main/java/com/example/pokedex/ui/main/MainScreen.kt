@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricPrompt
@@ -82,13 +83,13 @@ fun PokemonDetailScreen(
     clearCartMessage: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
-    val context = LocalContext.current
     var notificationPermissionGranted by remember { mutableStateOf(false) }
     RequestNotificationPermission { granted ->
         notificationPermissionGranted = granted
     }
     val id = pokemon.url.trimEnd('/').split("/").lastOrNull() ?: "1"
     val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,6 +133,14 @@ fun PokemonDetailScreen(
                 Button(
                     onClick = {
                         onAddToCart()
+                        if (notificationPermissionGranted) {
+                            showCartNotification(
+                                context,
+                                "Pokémon agregado",
+                                "${pokemon.name.replaceFirstChar { it.uppercase() }} se agregó al carrito.",
+                                R.drawable.ic_cart
+                            )
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -174,63 +183,9 @@ fun MainScreen(
     val cartCount by cartViewModel.cartCount.collectAsState()
     val cartMessage by cartViewModel.cartMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
     var showSnackbar by remember { mutableStateOf(false) }
     var snackbarMessage by remember { mutableStateOf("") }
     var selectedPokemon by remember { mutableStateOf<PokemonResult?>(null) }
-
-    @Composable
-    fun BiometricScreen(onSuccess: () -> Unit, onCancel: () -> Unit) {
-        var showPrompt by remember { mutableStateOf(true) }
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-        val context = LocalContext.current
-        LaunchedEffect(showPrompt) {
-            if (showPrompt) {
-                val activity = context as? FragmentActivity
-                if (activity == null) {
-                    errorMessage = "No se puede mostrar la autenticación biométrica en este dispositivo/emulador."
-                    showPrompt = false
-                    return@LaunchedEffect
-                }
-                val executor = ContextCompat.getMainExecutor(activity)
-                val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Autenticación biométrica")
-                    .setSubtitle("Coloca tu huella para continuar")
-                    .setNegativeButtonText("Cancelar")
-                    .build()
-                val biometricPrompt = BiometricPrompt(activity, executor,
-                    object : BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                            onSuccess()
-                        }
-                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                            errorMessage = errString.toString()
-                            onCancel()
-                        }
-                        override fun onAuthenticationFailed() {
-                            errorMessage = "La autenticación falló. Intenta nuevamente."
-                        }
-                    })
-                biometricPrompt.authenticate(promptInfo)
-                showPrompt = false
-            }
-        }
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Coloca tu huella para acceder al carrito", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(24.dp))
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = onCancel) {
-                    Text("Cancelar")
-                }
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
-                }
-            }
-        }
-    }
 
     if (selectedPokemon != null) {
         val price = cartViewModel.simulatePrice(selectedPokemon!!.name)
@@ -251,8 +206,13 @@ fun MainScreen(
         )
     } else if (showBiometricScreen) {
         BiometricScreen(
-            onSuccess = { showBiometricScreen = false; showCart = true },
-            onCancel = { showBiometricScreen = false }
+            onSuccess = {
+                showBiometricScreen = false
+                showCart = true
+            },
+            onCancel = {
+                showBiometricScreen = false
+            }
         )
     } else if (showCart) {
         CartScreen(viewModel = cartViewModel, onBack = { showCart = false })
@@ -404,6 +364,66 @@ fun RequestNotificationPermission(onPermissionResult: (Boolean) -> Unit) {
             }
         } else {
             onPermissionResult(true)
+        }
+    }
+}
+
+@Composable
+fun BiometricScreen(
+    onSuccess: () -> Unit,
+    onCancel: () -> Unit
+) {
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        Log.d("BiometricScreen", "DisposableEffect lanzado")
+        val activity = context as? FragmentActivity
+        if (activity == null) {
+            Log.e("BiometricScreen", "El contexto no es FragmentActivity")
+            errorMessage = "No se puede mostrar la autenticación biométrica en este dispositivo/emulador."
+            onCancel()
+        } else {
+            Log.d("BiometricScreen", "FragmentActivity detectada, creando BiometricPrompt")
+            val executor = ContextCompat.getMainExecutor(activity)
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Autenticación biométrica")
+                .setSubtitle("Selecciona una huella registrada para acceder al carrito")
+                .setNegativeButtonText("Cancelar")
+                .build()
+            val biometricPrompt = BiometricPrompt(activity, executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                        Log.d("BiometricScreen", "Autenticación biométrica exitosa")
+                        onSuccess()
+                    }
+                    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                        Log.e("BiometricScreen", "Error de autenticación: $errString")
+                        errorMessage = errString.toString()
+                        onCancel()
+                    }
+                    override fun onAuthenticationFailed() {
+                        Log.w("BiometricScreen", "Autenticación biométrica fallida")
+                        errorMessage = "La autenticación falló. Intenta nuevamente."
+                    }
+                })
+            Log.d("BiometricScreen", "Lanzando biometricPrompt.authenticate")
+            biometricPrompt.authenticate(promptInfo)
+        }
+        onDispose { Log.d("BiometricScreen", "DisposableEffect onDispose") }
+    }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Coloca tu huella para acceder al carrito", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(24.dp))
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onCancel) {
+                Text("Cancelar")
+            }
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }
