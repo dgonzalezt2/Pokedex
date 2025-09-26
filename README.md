@@ -68,6 +68,23 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 
 ## Instalador APK
 
+Puedes probar la app directamente desde tu navegador usando el siguiente emulador interactivo o descargar el APK:
+
+- **Descarga directa:** El archivo `app-debug.apk` está disponible en el repositorio.
+
+<p align="center">
+  <a href="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia" target="_blank">
+    <img src="https://static.appetize.io/images/logo/appetize-logo-mark.svg" width="40" style="vertical-align:middle;" />
+    <b>Probar app en Appetize.io</b>
+  </a>
+</p>
+
+<details>
+<summary>Emulador embebido (puedes interactuar aquí mismo):</summary>
+<br>
+<iframe src="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia?device=pixel6&osVersion=15.0&scale=75" width="378px" height="800px" frameborder="0" scrolling="no"></iframe>
+</details>
+
 ---
 
 Desarrollado por David Gonzalez Tamayo.
