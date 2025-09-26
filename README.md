@@ -77,7 +77,7 @@ Puedes probar la app directamente desde tu navegador usando el siguiente emulado
   <br>
 
 <p align="center">
-  <a href="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia" target="_blank" style="text-decoration: none; color: inherit;">
+  <a href="[https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia](https://appetize.io/app/b_gslixb5aw3nxqposgrr7ejx2ia)" target="_blank" style="text-decoration: none; color: inherit;">
     <img 
       src="https://media.licdn.com/dms/image/v2/D4D0BAQHXFefhXDoBLQ/company-logo_200_200/B4DZY3w8kOH4AI-/0/1744692300507/appetize_io_logo?e=1761782400&v=beta&t=NvsUoTs9bq1nnRWlfq_ORaKrjBQ61ZXoMLE3MhBG2Bo" 
       width="40" 
