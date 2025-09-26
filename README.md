@@ -52,6 +52,16 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 - **Consistencia**: El diseño mantiene la coherencia entre pantallas, con navegación intuitiva y accesibilidad.
 - **Colores y tipografía**: Se usan estilos nativos de Material Design para facilitar la lectura y navegación.
 
+## Vistas de la aplicacion
+
+<img width="630" height="979" alt="image" src="https://github.com/user-attachments/assets/ab536a87-c440-46be-8e2f-8bad4a1a9be1" />
+<img width="624" height="983" alt="image" src="https://github.com/user-attachments/assets/0633f8c2-56ce-4ff7-8aea-dd6ce4beca10" />
+<img width="630" height="987" alt="image" src="https://github.com/user-attachments/assets/04a5efe8-3d51-4467-8a7d-6fd9e0e311a5" />
+<img width="633" height="983" alt="image" src="https://github.com/user-attachments/assets/73d312a8-2d1d-4521-96d0-ea3374068dcc" />
+
+
+
+
 ---
 
 Desarrollado por David Gonzalez Tamayo.
