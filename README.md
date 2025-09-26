@@ -32,10 +32,6 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
    <p align="center">
      <b>Fig. 1:</b> Abrir controles extendidos &nbsp;&nbsp;&nbsp;&nbsp; <b>Fig. 2:</b> Simular huella digital
    </p>
-   <p align="center">
-     <span style="font-size:12px;">Abrir controles extendidos</span>
-     <span style="font-size:12px; margin-left:40px;">Simular huella digital</span>
-   </p>
 
 7. Si usas dispositivo físico, asegúrate de tener una huella registrada en el sistema.
 
