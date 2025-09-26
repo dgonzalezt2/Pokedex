@@ -3,24 +3,37 @@
 Aplicación nativa Android para consultar, agregar y proteger un carrito de compras de Pokémon.
 
 ## APIs utilizadas
-- **PokeAPI**: https://pokeapi.co/ (consulta de datos de Pokémon)
+- **PokeAPI**: [https://pokeapi.co/](https://pokeapi.co/) (consulta de datos de Pokémon)
 - **Room**: Persistencia local del carrito
 - **Biometric API**: Autenticación biométrica nativa (huella dactilar)
 - **Jetpack Compose**: UI declarativa moderna
 
 ## Instrucciones para correr el proyecto
 1. Clona el repositorio:
-   ```
+   ```bash
    git clone https://github.com/dgonzalezt2/pokedex.git
    ```
 2. Abre el proyecto en Android Studio.
 3. Configura un emulador o dispositivo físico con Android 8.0+.
 4. Sincroniza dependencias (Gradle Sync).
 5. Ejecuta el proyecto (Run).
-6. Cuando inicies el emulador debes configurar dentro del sistema la huella biometrica y para simular la huella tienes que abrir unos controles como se muestra en los siguientes pasos:
-<img width="624" height="176" alt="image" src="https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d" />
-<img width="847" height="686" alt="image" src="https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e" />
+6. Para probar la autenticación biométrica en el emulador:
+   - Abre la app de "Configuración" del emulador y agrega una huella digital (puedes buscar "Security" o "Biometrics").
+   - Para simular la huella, abre el panel de controles del emulador:
+     - Ve a **Extended Controls** (Ctrl+Shift+M o desde el menú del emulador).
+     - Selecciona **Fingerprint** en la barra lateral.
+     - Haz clic en **Touch Sensor** para simular la autenticación.
 
+   Ejemplo visual:
+   ![Abrir controles extendidos](https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d)
+   ![Simular huella digital](https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e)
+
+7. Si usas dispositivo físico, asegúrate de tener una huella registrada en el sistema.
+
+### Recomendaciones para desarrollo y pruebas
+- Usa un emulador con Google APIs y Play Store para mejor compatibilidad.
+- Si tienes problemas con la biometría, revisa los permisos en el sistema y en la app.
+- Para pruebas automáticas, puedes simular la huella desde los controles del emulador.
 
 ## Arquitectura y decisiones técnicas
 - **MVVM (Model-View-ViewModel)**: Separación clara entre UI, lógica y datos.
@@ -37,8 +50,8 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 - **Minimalista y funcional**: Uso de Jetpack Compose para una interfaz limpia, con componentes nativos y feedback inmediato (snackbar).
 - **Notificaciones internas**: Todas las acciones relevantes (agregar/eliminar) muestran mensajes visuales en la app, evitando distracciones del sistema.
 - **Consistencia**: El diseño mantiene la coherencia entre pantallas, con navegación intuitiva y accesibilidad.
+- **Colores y tipografía**: Se usan estilos nativos de Material Design para facilitar la lectura y navegación.
 
 ---
 
 Desarrollado por David Gonzalez Tamayo.
-
