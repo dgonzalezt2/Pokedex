@@ -70,6 +70,32 @@ fun showCartNotification(context: Context, title: String, message: String, iconR
     }
 }
 
+fun authenticateWithBiometrics(
+    activity: FragmentActivity,
+    onSuccess: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val executor = ContextCompat.getMainExecutor(activity)
+    val promptInfo = BiometricPrompt.PromptInfo.Builder()
+        .setTitle("Autenticación biométrica")
+        .setSubtitle("Selecciona una huella registrada para acceder al carrito")
+        .setNegativeButtonText("Cancelar")
+        .build()
+    val biometricPrompt = BiometricPrompt(activity, executor,
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                onSuccess()
+            }
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                onCancel()
+            }
+            override fun onAuthenticationFailed() {
+                // No hacer nada, solo mostrar el error si se desea
+            }
+        })
+    biometricPrompt.authenticate(promptInfo)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(
@@ -77,93 +103,107 @@ fun PokemonDetailScreen(
     price: Double,
     onAddToCart: () -> Unit,
     onBack: () -> Unit,
-    onCartClick: () -> Unit,
     cartCount: Int,
     cartMessage: String?,
     clearCartMessage: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    cartViewModel: CartViewModel
 ) {
     var notificationPermissionGranted by remember { mutableStateOf(false) }
+    var showCart by remember { mutableStateOf(false) }
     RequestNotificationPermission { granted ->
         notificationPermissionGranted = granted
     }
     val id = pokemon.url.trimEnd('/').split("/").lastOrNull() ?: "1"
     val imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
     val context = LocalContext.current
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(pokemon.name.replaceFirstChar { it.uppercase() }) },
-                actions = {
-                    Box {
-                        IconButton(onClick = onCartClick) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_cart),
-                                contentDescription = "Ver carrito"
-                            )
-                        }
-                        if (cartCount > 0) {
-                            Badge(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .offset(x = (-4).dp, y = 4.dp)
-                            ) {
-                                Text(cartCount.toString())
+    val activity = context as? FragmentActivity
+    if (showCart) {
+        CartScreen(viewModel = cartViewModel, onBack = { showCart = false })
+    } else {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(pokemon.name.replaceFirstChar { it.uppercase() }) },
+                    actions = {
+                        Box {
+                            IconButton(onClick = {
+                                activity?.let {
+                                    authenticateWithBiometrics(
+                                        it,
+                                        onSuccess = { showCart = true },
+                                        onCancel = { /* Puedes mostrar un mensaje si lo deseas */ }
+                                    )
+                                }
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_cart),
+                                    contentDescription = "Ver carrito"
+                                )
+                            }
+                            if (cartCount > 0) {
+                                Badge(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = (-4).dp, y = 4.dp)
+                                ) {
+                                    Text(cartCount.toString())
+                                }
                             }
                         }
                     }
-                }
-            )
-        }
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = imageUrl,
-                        placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
-                        error = painterResource(id = R.drawable.ic_launcher_foreground)
-                    ),
-                    contentDescription = pokemon.name,
-                    modifier = Modifier.size(128.dp)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Precio: $${"%.2f".format(price)}", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                        onAddToCart()
-                        if (notificationPermissionGranted) {
-                            showCartNotification(
-                                context,
-                                "Pokémon agregado",
-                                "${pokemon.name.replaceFirstChar { it.uppercase() }} se agregó al carrito.",
-                                R.drawable.ic_cart
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text("Agregar al carrito")
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text("Volver")
+            }
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = imageUrl,
+                            placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                            error = painterResource(id = R.drawable.ic_launcher_foreground)
+                        ),
+                        contentDescription = pokemon.name,
+                        modifier = Modifier.size(128.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Precio: $${"%.2f".format(price)}", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = {
+                            onAddToCart()
+                            if (notificationPermissionGranted) {
+                                showCartNotification(
+                                    context,
+                                    "Pokémon agregado",
+                                    "${pokemon.name.replaceFirstChar { it.uppercase() }} se agregó al carrito.",
+                                    R.drawable.ic_cart
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text("Agregar al carrito")
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text("Volver")
+                    }
                 }
             }
         }
-    }
-    LaunchedEffect(cartMessage) {
-        if (cartMessage != null) {
-            snackbarHostState.showSnackbar(cartMessage)
-            clearCartMessage()
+        LaunchedEffect(cartMessage) {
+            if (cartMessage != null) {
+                snackbarHostState.showSnackbar(cartMessage)
+                clearCartMessage()
+            }
         }
     }
 }
@@ -198,11 +238,11 @@ fun MainScreen(
                 cartViewModel.addToCart(selectedPokemon!!.name, imageUrl)
             },
             onBack = { selectedPokemon = null },
-            onCartClick = { showCart = true },
             cartCount = cartCount,
             cartMessage = cartMessage,
             clearCartMessage = { cartViewModel.clearCartMessage() },
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            cartViewModel = cartViewModel
         )
     } else if (showBiometricScreen) {
         BiometricScreen(
