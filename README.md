@@ -72,18 +72,27 @@ Puedes probar la app directamente desde tu navegador usando el siguiente emulado
 
 - **Descarga directa:** El archivo `app-debug.apk` está disponible en el repositorio.
 
+<details>
+  <summary>Emulador embebido (puedes interactuar aquí mismo)</summary>
+  <br>
+
 <p align="center">
-  <a href="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia" target="_blank">
-    <img src="https://static.appetize.io/images/logo/appetize-logo-mark.svg" width="40" style="vertical-align:middle;" />
-    <b>Probar app en Appetize.io</b>
+  <a href="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia" target="_blank" style="text-decoration: none; color: inherit;">
+    <img 
+      src="https://media.licdn.com/dms/image/v2/D4D0BAQHXFefhXDoBLQ/company-logo_200_200/B4DZY3w8kOH4AI-/0/1744692300507/appetize_io_logo?e=1761782400&v=beta&t=NvsUoTs9bq1nnRWlfq_ORaKrjBQ61ZXoMLE3MhBG2Bo" 
+      width="40" 
+      alt="Logo Appetize.io"
+      style="vertical-align: middle; margin-right: 8px;"
+    />
+    <strong>Probar app en Appetize.io</strong>
   </a>
 </p>
 
-<details>
-<summary>Emulador embebido (puedes interactuar aquí mismo):</summary>
-<br>
-<iframe src="https://appetize.io/embed/b_gslixb5aw3nxqposgrr7ejx2ia?device=pixel6&osVersion=15.0&scale=75" width="378px" height="800px" frameborder="0" scrolling="no"></iframe>
 </details>
+
+
+
+
 
 ---
 
