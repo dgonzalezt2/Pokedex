@@ -25,8 +25,14 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
      - Haz clic en **Touch Sensor** para simular la autenticación.
 
    Ejemplo visual:
-   ![Abrir controles extendidos](https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d)
-   ![Simular huella digital](https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e)
+   <p align="center">
+     <img src="https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d" width="220" alt="Abrir controles extendidos" />
+     <img src="https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e" width="220" alt="Simular huella digital" />
+   </p>
+   <p align="center">
+     <span style="font-size:12px;">Abrir controles extendidos</span>
+     <span style="font-size:12px; margin-left:40px;">Simular huella digital</span>
+   </p>
 
 7. Si usas dispositivo físico, asegúrate de tener una huella registrada en el sistema.
 
@@ -52,15 +58,14 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 - **Consistencia**: El diseño mantiene la coherencia entre pantallas, con navegación intuitiva y accesibilidad.
 - **Colores y tipografía**: Se usan estilos nativos de Material Design para facilitar la lectura y navegación.
 
-## Vistas de la aplicacion
+## Vistas de la aplicación
 
-<img width="630" height="979" alt="image" src="https://github.com/user-attachments/assets/ab536a87-c440-46be-8e2f-8bad4a1a9be1" />
-<img width="624" height="983" alt="image" src="https://github.com/user-attachments/assets/0633f8c2-56ce-4ff7-8aea-dd6ce4beca10" />
-<img width="630" height="987" alt="image" src="https://github.com/user-attachments/assets/04a5efe8-3d51-4467-8a7d-6fd9e0e311a5" />
-<img width="633" height="983" alt="image" src="https://github.com/user-attachments/assets/73d312a8-2d1d-4521-96d0-ea3374068dcc" />
-
-
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ab536a87-c440-46be-8e2f-8bad4a1a9be1" width="250" />
+  <img src="https://github.com/user-attachments/assets/0633f8c2-56ce-4ff7-8aea-dd6ce4beca10" width="250" />
+  <img src="https://github.com/user-attachments/assets/04a5efe8-3d51-4467-8a7d-6fd9e0e311a5" width="250" />
+  <img src="https://github.com/user-attachments/assets/73d312a8-2d1d-4521-96d0-ea3374068dcc" width="250" />
+</p>
 
 ---
 
