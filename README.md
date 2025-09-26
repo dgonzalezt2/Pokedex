@@ -26,8 +26,8 @@ Aplicación nativa Android para consultar, agregar y proteger un carrito de comp
 
    Ejemplo visual:
    <p align="center">
-     <img src="https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d" width="350" alt="Abrir controles extendidos" />
-     <img src="https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e" width="350" alt="Simular huella digital" />
+     <img src="https://github.com/user-attachments/assets/5622d03e-e5ed-4447-a28c-4b6bc6e70b7d" width="350" />
+     <img src="https://github.com/user-attachments/assets/62346835-c2f5-4f3c-b324-aaa064f08b5e" width="350" />
    </p>
    <p align="center">
      <b>Fig. 1:</b> Abrir controles extendidos &nbsp;&nbsp;&nbsp;&nbsp; <b>Fig. 2:</b> Simular huella digital
